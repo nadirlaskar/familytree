@@ -8,10 +8,10 @@ import java.util.Collection;
 import java.util.HashMap;
 
 class PersonAsString {
-    public String name;
-    public String gender;
-    public String spouse;
-    public String parent;
+    String name;
+    String gender;
+    String spouse;
+    String parent;
 
     public PersonAsString(String name, String gender, String spouse, String parent){
         this.name = name;
