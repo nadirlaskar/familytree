@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/familytree.iml" filepath="$PROJECT_DIR$/familytree.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/familytree.main.iml" filepath="$PROJECT_DIR$/.idea/modules/familytree.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/familytree.test.iml" filepath="$PROJECT_DIR$/.idea/modules/familytree.test.iml" />
+    </modules>
+  </component>
+</project>
