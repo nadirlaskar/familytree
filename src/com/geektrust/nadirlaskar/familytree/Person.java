@@ -3,17 +3,17 @@ package com.geektrust.nadirlaskar.familytree;
 public class Person {
     private String name;
     private String gender;
-    private Person spouse;
-    private Parent parent;
+    private Relationship spouse;
+    private Relationship parent;
 
-    public Person(String name, String gender, Person spouse, Parent parent){
+    Person(String name, String gender, Relationship spouse, Relationship parent){
         this.name = name;
         this.gender = gender;
         this.spouse = spouse;
         this.parent = parent;
     }
 
-    public String getName() {
+    String getName() {
         return name;
     }
 
@@ -21,27 +21,33 @@ public class Person {
         this.name = name;
     }
 
-    public String getGender() {
+    String getGender() {
         return gender;
     }
 
-    public void setGender(String gender) {
+    void setGender(String gender) {
         this.gender = gender;
     }
 
-    public Person getSpouse() {
+    Person getSpouse() {
+        if(spouse!=null)
+            return this.gender.equalsIgnoreCase("female")?spouse.getMale():spouse.getFemale();
+        else return null;
+    }
+
+    Relationship getRelationship(){
         return spouse;
     }
 
-    public void setSpouse(Person spouse) {
+    void setSpouse(Relationship spouse) {
         this.spouse = spouse;
     }
 
-    public Parent getParent() {
+    Relationship getParent() {
         return parent;
     }
 
-    public void setParent(Parent parent) {
-        this.parent = parent;
+    void setParent(Relationship relationship) {
+        this.parent = relationship;
     }
 }

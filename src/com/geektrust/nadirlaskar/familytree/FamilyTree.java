@@ -25,232 +25,261 @@ class FamilyTree {
     private Gson gson = new Gson();
     private Type collectionType = new TypeToken<Collection<PersonAsString>>(){}.getType();
     private HashMap<String,Person> personHashMap;
-    private HashMap<String, Parent> parentHashMap;
+    private HashMap<String, Relationship> relationshipHashMap;
 
     FamilyTree() {
         personHashMap = new HashMap<>();
-        parentHashMap = new HashMap<>();
+        relationshipHashMap = new HashMap<>();
         bootstrapFamily();
     }
 
+    // Import initial familyTree using the json provided
     private void bootstrapFamily(){
         Collection<PersonAsString> persons = gson.fromJson(getBootstrapFamily(), collectionType);
 
         // Initialize personNodes
-        persons.forEach(personInput -> {
+        for (PersonAsString person : persons) {
             Person me;
-            me = new Person( personInput.name, personInput.gender,
-                             new Person(personInput.spouse, null,null, null), null );
-            personHashMap.put(me.getName(),me);
-        });
-
-        // Assign parent and spouse
-        persons.forEach(personInput -> {
-            Person me,father, mother, spouse;
-            me = personHashMap.get(personInput.name);
-
-            if(personInput.parent != null){
-                Parent parent;
-                if(parentHashMap.containsKey(personInput.parent)){
-                    parent = parentHashMap.get(personInput.parent);
-                }else {
-                    mother = personHashMap.get(personInput.parent);
-                    father = personHashMap.get(mother.getSpouse().getName());
-                    parent = new Parent(father,mother);
-                    parentHashMap.put(parent.getMother().getName(),parent);
-                }
-                me.setParent(parent);
+            // Get already added person, from hashMap
+            if (personHashMap.containsKey(person.name)) {
+                me = personHashMap.get(person.name);
+                me.setGender(person.gender);
+            } else {
+                me = new Person(person.name, person.gender, null, null);
+                personHashMap.put(me.getName(), me);
             }
 
-            if(personInput.spouse != null){
-                spouse = personHashMap.get(personInput.spouse);
+            // If spouse exist, add spouse relationship
+            if (person.spouse != null) {
+                Relationship spouse;
+                if (relationshipHashMap.containsKey(person.spouse)) {
+                    spouse = relationshipHashMap.get(person.spouse);
+                } else {
+                    Person partner = personHashMap.get(person.spouse);
+                    if (partner == null) {
+                        partner = new Person(person.spouse, null, null, null);
+                        personHashMap.put(person.spouse, partner);
+                    }
+                    if (person.gender.equalsIgnoreCase("male")) {
+                        spouse = new Relationship(me, partner);
+                    } else {
+                        spouse = new Relationship(partner, me);
+                    }
+                }
+                relationshipHashMap.put(me.getName(), spouse);
                 me.setSpouse(spouse);
             }
-        });
+
+            if(person.parent != null){
+                Relationship parent;
+                parent = relationshipHashMap.get(person.parent);
+                if(person.gender.equalsIgnoreCase("male")){
+                    parent.sons.add(me);
+                }else{
+                    parent.daughters.add(me);
+                }
+                parent.children.add(me);
+                me.setParent(parent);
+            }
+        }
     }
 
     private String getBootstrapFamily() {
         return "[\n" +
                 "  {\n" +
-                "    \"name\": \"king shan\",\n" +
+                "    \"name\": \"King Shan\",\n" +
                 "    \"gender\": \"male\",\n" +
-                "    \"spouse\": \"queen anga\",\n" +
+                "    \"spouse\": \"Queen Anga\",\n" +
                 "    \"parent\": null\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"queen anga\",\n" +
+                "    \"name\": \"Queen Anga\",\n" +
                 "    \"gender\": \"female\",\n" +
-                "    \"spouse\": \"king shan\",\n" +
+                "    \"spouse\": \"King Shan\",\n" +
                 "    \"parent\": null\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"chit\",\n" +
+                "    \"name\": \"Chit\",\n" +
                 "    \"gender\": \"male\",\n" +
-                "    \"spouse\": \"amba\",\n" +
-                "    \"parent\": \"queen anga\"\n" +
+                "    \"spouse\": \"Amba\",\n" +
+                "    \"parent\": \"Queen Anga\"\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"amba\",\n" +
+                "    \"name\": \"Amba\",\n" +
                 "    \"gender\": \"female\",\n" +
-                "    \"spouse\": \"chit\",\n" +
+                "    \"spouse\": \"Chit\",\n" +
                 "    \"parent\": null\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"ish\",\n" +
+                "    \"name\": \"Ish\",\n" +
                 "    \"gender\": \"male\",\n" +
                 "    \"spouse\": null,\n" +
-                "    \"parent\": \"queen anga\"\n" +
+                "    \"parent\": \"Queen Anga\"\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"vich\",\n" +
+                "    \"name\": \"Vich\",\n" +
                 "    \"gender\": \"male\",\n" +
-                "    \"spouse\": \"lika\",\n" +
-                "    \"parent\": \"queen anga\"\n" +
+                "    \"spouse\": \"Lika\",\n" +
+                "    \"parent\": \"Queen Anga\"\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"lika\",\n" +
+                "    \"name\": \"Lika\",\n" +
                 "    \"gender\": \"female\",\n" +
-                "    \"spouse\": \"vich\",\n" +
+                "    \"spouse\": \"Vich\",\n" +
                 "    \"parent\": null\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"aras\",\n" +
+                "    \"name\": \"Aras\",\n" +
                 "    \"gender\": \"male\",\n" +
-                "    \"spouse\": \"chitra\",\n" +
-                "    \"parent\": \"queen anga\"\n" +
+                "    \"spouse\": \"Chitra\",\n" +
+                "    \"parent\": \"Queen Anga\"\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"chitra\",\n" +
+                "    \"name\": \"Chitra\",\n" +
                 "    \"gender\": \"female\",\n" +
-                "    \"spouse\": \"aras\",\n" +
+                "    \"spouse\": \"Aras\",\n" +
                 "    \"parent\": null\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"satya\",\n" +
+                "    \"name\": \"Satya\",\n" +
                 "    \"gender\": \"female\",\n" +
-                "    \"spouse\": \"vyan\",\n" +
-                "    \"parent\": \"queen anga\"\n" +
+                "    \"spouse\": \"Vyan\",\n" +
+                "    \"parent\": \"Queen Anga\"\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"vyan\",\n" +
+                "    \"name\": \"Vyan\",\n" +
                 "    \"gender\": \"male\",\n" +
-                "    \"spouse\": \"satya\",\n" +
+                "    \"spouse\": \"Satya\",\n" +
                 "    \"parent\": null\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"dritha\",\n" +
+                "    \"name\": \"Dritha\",\n" +
                 "    \"gender\": \"female\",\n" +
-                "    \"spouse\": \"jaya\",\n" +
-                "    \"parent\": \"amba\"\n" +
+                "    \"spouse\": \"Jaya\",\n" +
+                "    \"parent\": \"Amba\"\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"jaya\",\n" +
+                "    \"name\": \"Jaya\",\n" +
                 "    \"gender\": \"male\",\n" +
-                "    \"spouse\": \"dritha\",\n" +
+                "    \"spouse\": \"Dritha\",\n" +
                 "    \"parent\": null\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"tritha\",\n" +
+                "    \"name\": \"Tritha\",\n" +
                 "    \"gender\": \"female\",\n" +
                 "    \"spouse\": null,\n" +
-                "    \"parent\": \"amba\"\n" +
+                "    \"parent\": \"Amba\"\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"vritha\",\n" +
+                "    \"name\": \"Vritha\",\n" +
                 "    \"gender\": \"male\",\n" +
                 "    \"spouse\": null,\n" +
-                "    \"parent\": \"amba\"\n" +
+                "    \"parent\": \"Amba\"\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"vila\",\n" +
+                "    \"name\": \"Vila\",\n" +
                 "    \"gender\": \"female\",\n" +
                 "    \"spouse\": null,\n" +
-                "    \"parent\": \"lika\"\n" +
+                "    \"parent\": \"Lika\"\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"chika\",\n" +
+                "    \"name\": \"Chika\",\n" +
                 "    \"gender\": \"female\",\n" +
                 "    \"spouse\": null,\n" +
-                "    \"parent\": \"lika\"\n" +
+                "    \"parent\": \"Lika\"\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"arit\",\n" +
+                "    \"name\": \"Arit\",\n" +
                 "    \"gender\": \"male\",\n" +
-                "    \"spouse\": \"jnki\",\n" +
+                "    \"spouse\": \"Jnki\",\n" +
                 "    \"parent\": null\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"jnki\",\n" +
+                "    \"name\": \"Jnki\",\n" +
                 "    \"gender\": \"female\",\n" +
-                "    \"spouse\": \"arit\",\n" +
-                "    \"parent\": \"chitra\"\n" +
+                "    \"spouse\": \"Arit\",\n" +
+                "    \"parent\": \"Chitra\"\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"ahit\",\n" +
+                "    \"name\": \"Ahit\",\n" +
                 "    \"gender\": \"male\",\n" +
                 "    \"spouse\": null,\n" +
-                "    \"parent\": \"chitra\"\n" +
+                "    \"parent\": \"Chitra\"\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"satvy\",\n" +
+                "    \"name\": \"Satvy\",\n" +
                 "    \"gender\": \"female\",\n" +
-                "    \"spouse\": \"asva\",\n" +
+                "    \"spouse\": \"Asva\",\n" +
                 "    \"parent\": null\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"asva\",\n" +
+                "    \"name\": \"Asva\",\n" +
                 "    \"gender\": \"male\",\n" +
-                "    \"spouse\": \"satvy\",\n" +
-                "    \"parent\": \"satya\"\n" +
+                "    \"spouse\": \"Satvy\",\n" +
+                "    \"parent\": \"Satya\"\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"krpi\",\n" +
+                "    \"name\": \"Krpi\",\n" +
                 "    \"gender\": \"female\",\n" +
-                "    \"spouse\": \"vyas\",\n" +
+                "    \"spouse\": \"Vyas\",\n" +
                 "    \"parent\": null\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"vyas\",\n" +
+                "    \"name\": \"Vyas\",\n" +
                 "    \"gender\": \"male\",\n" +
-                "    \"spouse\": \"krpi\",\n" +
-                "    \"parent\": \"satya\"\n" +
+                "    \"spouse\": \"Krpi\",\n" +
+                "    \"parent\": \"Satya\"\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"yodhan\",\n" +
-                "    \"gender\": \"male\",\n" +
-                "    \"spouse\": null,\n" +
-                "    \"parent\": \"dritha\"\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"name\": \"laki\",\n" +
-                "    \"gender\": \"male\",\n" +
-                "    \"spouse\": null,\n" +
-                "    \"parent\": \"jnki\"\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"name\": \"lavnya\",\n" +
+                "    \"name\": \"Atya\",\n" +
                 "    \"gender\": \"female\",\n" +
                 "    \"spouse\": null,\n" +
-                "    \"parent\": \"jnki\"\n" +
+                "    \"parent\": \"Satya\"\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"vasa\",\n" +
+                "    \"name\": \"Yodhan\",\n" +
                 "    \"gender\": \"male\",\n" +
                 "    \"spouse\": null,\n" +
-                "    \"parent\": \"satvy\"\n" +
+                "    \"parent\": \"Dritha\"\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"kriya\",\n" +
+                "    \"name\": \"Laki\",\n" +
                 "    \"gender\": \"male\",\n" +
                 "    \"spouse\": null,\n" +
-                "    \"parent\": \"krpi\"\n" +
+                "    \"parent\": \"Jnki\"\n" +
                 "  },\n" +
                 "  {\n" +
-                "    \"name\": \"krithi\",\n" +
+                "    \"name\": \"Lavnya\",\n" +
                 "    \"gender\": \"female\",\n" +
                 "    \"spouse\": null,\n" +
-                "    \"parent\": \"krpi\"\n" +
+                "    \"parent\": \"Jnki\"\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"name\": \"Vasa\",\n" +
+                "    \"gender\": \"male\",\n" +
+                "    \"spouse\": null,\n" +
+                "    \"parent\": \"Satvy\"\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"name\": \"Kriya\",\n" +
+                "    \"gender\": \"male\",\n" +
+                "    \"spouse\": null,\n" +
+                "    \"parent\": \"Krpi\"\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"name\": \"Krithi\",\n" +
+                "    \"gender\": \"female\",\n" +
+                "    \"spouse\": null,\n" +
+                "    \"parent\": \"Krpi\"\n" +
                 "  }\n" +
                 "]";
+    }
+
+    Person getPerson(String name){
+        return personHashMap.get(name);
+    }
+
+    void putPerson(Person child) {
+        personHashMap.put(child.getName(),child);
     }
 }
